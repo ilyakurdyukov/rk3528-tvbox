@@ -1,0 +1,12 @@
+diff --git a/sound/soc/rockchip/rockchip_sai.c b/sound/soc/rockchip/rockchip_sai.c
+index 6609c1f..fcb8fb0 100644
+--- a/sound/soc/rockchip/rockchip_sai.c
++++ b/sound/soc/rockchip/rockchip_sai.c
+@@ -1361,6 +1361,7 @@ static int rockchip_sai_probe(struct platform_device *pdev)
+ 	sai->fw_ratio = 1;
+ 	/* match to register default */
+ 	sai->is_master_mode = true;
++	sai->is_clk_auto = true;
+ 	dev_set_drvdata(&pdev->dev, sai);
+ 
+ 	sai->rst_h = devm_reset_control_get_optional_exclusive(&pdev->dev, "h");

@@ -1,0 +1,17 @@
+diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
+index 73818ff..7ba70ec 100644
+--- a/drivers/gpu/drm/drm_ioctl.c
++++ b/drivers/gpu/drm/drm_ioctl.c
+@@ -122,6 +122,12 @@ int drm_getunique(struct drm_device *dev, void *data,
+ 
+ 	mutex_lock(&dev->master_mutex);
+ 	master = file_priv->master;
++
++	if (!master) {
++		mutex_unlock(&dev->master_mutex);
++		return -EINVAL;
++	}
++
+ 	if (u->unique_len >= master->unique_len) {
+ 		if (copy_to_user(u->unique, master->unique, master->unique_len)) {
+ 			mutex_unlock(&dev->master_mutex);

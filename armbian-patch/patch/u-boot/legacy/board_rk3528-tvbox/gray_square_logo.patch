@@ -1,0 +1,22 @@
+diff --git a/drivers/video/drm/rockchip_display.c b/drivers/video/drm/rockchip_display.c
+index d95d77b..8a58cc4 100644
+--- a/drivers/video/drm/rockchip_display.c
++++ b/drivers/video/drm/rockchip_display.c
+@@ -1169,6 +1169,17 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
+ 	if (!header)
+ 		return -ENOMEM;
+ 
++#if 1
++	logo->width = logo->height = 256; logo->bpp = 24;
++	dst_size = logo->width * logo->height * logo->bpp >> 3;
++	dst = get_display_buffer(dst_size);
++	if (!dst) { ret = -ENOMEM; goto free_header; }
++	memset(dst, 127, dst_size);
++	logo->offset = logo->ymirror = 0; logo->mem = dst;
++	memcpy(&logo_cache->logo, logo, sizeof(*logo));
++	flush_dcache_range((ulong)dst, ALIGN((ulong)dst + dst_size, CONFIG_SYS_CACHELINE_SIZE));
++	goto free_header;
++#endif
+ 	len = rockchip_read_resource_file(header, bmp_name, 0, RK_BLK_SIZE);
+ 	if (len != RK_BLK_SIZE) {
+ 		ret = -EINVAL;

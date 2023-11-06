@@ -1,0 +1,16 @@
+diff --git a/cmd/rockusb.c b/cmd/rockusb.c
+index 9792a82..1a19354 100644
+--- a/cmd/rockusb.c
++++ b/cmd/rockusb.c
+@@ -25,7 +25,11 @@ static int rkusb_read_sector(struct ums *ums_dev,
+ 	lbaint_t blkstart = start + ums_dev->start_sector;
+ 	int ret;
+ 
++#if 1
++	if (0) {
++#else
+ 	if ((blkstart + blkcnt) > RKUSB_READ_LIMIT_ADDR) {
++#endif
+ 		memset(buf, 0xcc, blkcnt * SECTOR_SIZE);
+ 		return blkcnt;
+ 	} else {

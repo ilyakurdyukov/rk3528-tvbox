@@ -1,0 +1,267 @@
+diff --git a/rk3528-demo.dtsi b/rk3528-demo.dtsi
+index aebd946..f34daca 100644
+--- a/rk3528-demo.dtsi
++++ b/rk3528-demo.dtsi
+@@ -239,6 +239,26 @@
+ 		regulator-max-microvolt = <1200000>;
+ 		vin-supply = <&vcc5v0_sys>;
+ 	};
++
++#if VONTAR_DQ08
++	vcc_sd: vcc-sd {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc_sd";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vcc_3v3_s3>;
++		regulator-always-on;
++	};
++
++	vccio_sd: vccio-sd {
++		compatible = "regulator-fixed";
++		regulator-name = "vccio_sd";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&vcc5v0_sys>;
++		regulator-always-on;
++	};
++#endif
+ };
+ 
+ &acodec {
+@@ -416,8 +436,14 @@
+ 	bus-width = <8>;
+ 	supports-emmc;
+ 	non-removable;
++#if VONTAR_DQ08
++	mmc-hs200-1_8v;
++#endif
+ 	mmc-hs400-1_8v;
+ 	mmc-hs400-enhanced-strobe;
++#if VONTAR_DQ08
++	mmc-ddr-1_8v;
++#endif
+ 	max-frequency = <200000000>;
+ 	fixed-emmc-driver-type = <4>;
+ 	status = "okay";
+@@ -466,6 +492,9 @@
+ };
+ 
+ &usbdrd_dwc3 {
++#if VONTAR_DQ08
++	extcon = <&usb2phy>;
++#else
+ 	dr_mode = "otg";
+ 	maximum-speed = "high-speed";
+ 	extcon = <&usb2phy>;
+@@ -473,6 +502,7 @@
+ 	phy-names = "usb2-phy";
+ 	snps,dis_u2_susphy_quirk;
+ 	snps,usb2-lpm-disable;
++#endif
+ 	status = "okay";
+ };
+ 
+diff --git a/rk3528-demo1-lp4-v10.dtsi b/rk3528-demo1-lp4-v10.dtsi
+index c1f34d0..10867f1 100644
+--- a/rk3528-demo1-lp4-v10.dtsi
++++ b/rk3528-demo1-lp4-v10.dtsi
+@@ -13,6 +13,7 @@
+ 	model = "Rockchip RK3528 DEMO1 LP4 V10 Board";
+ 	compatible = "rockchip,rk3528-demo1-lp4-v10", "rockchip,rk3528";
+ 
++#if !VONTAR_DQ08
+ 	sdio_pwrseq: sdio-pwrseq {
+ 		compatible = "mmc-pwrseq-simple";
+ 		pinctrl-names = "default";
+@@ -41,6 +42,7 @@
+ 		WIFI,host_wake_irq = <&gpio3 RK_PB3 GPIO_ACTIVE_HIGH>;
+ 		status = "okay";
+ 	};
++#endif
+ };
+ 
+ &sdio1 {
+@@ -57,13 +59,26 @@
+ 	mmc-pwrseq = <&sdio_pwrseq>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sdio1_bus4 &sdio1_cmd &sdio1_clk>;
++#if VONTAR_DQ08
++	sd-uhs-sdr12;
++	sd-uhs-sdr25;
++	sd-uhs-sdr50;
++	sd-uhs-ddr50;
++#endif
+ 	sd-uhs-sdr104;
++#if VONTAR_DQ08
++	vqmmc-supply = <&vccio_sd>;
++	vmmc-supply = <&vcc_sd>;
++#endif
+ 	status = "okay";
+ };
+ 
+ &uart2 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
++#if VONTAR_DQ08
++	dma-names = "!tx", "!rx";
++#endif
+ 	pinctrl-0 = <&uart2m0_xfer &uart2m0_ctsn>;
+ };
+ 
+diff --git a/rk3528-evb.dtsi b/rk3528-evb.dtsi
+index b737c44..3d8dd3b 100644
+--- a/rk3528-evb.dtsi
++++ b/rk3528-evb.dtsi
+@@ -24,6 +24,15 @@
+ 		};
+ 	};
+ 
++#if FD655_DEV
++	fd655_dev {
++		compatible = "rockchip,fd655_dev";
++		status = "okay";
++		clk_pin = <&gpio4 RK_PC3 GPIO_ACTIVE_HIGH>;
++		dat_pin = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
++	};
++#endif
++
+ 	adc_keys: adc-keys {
+ 		status = "okay";
+ 		compatible = "adc-keys";
+@@ -84,6 +93,34 @@
+ 		};
+ 	};
+ 
++#if H96MAX_M1
++	leds: gpio-leds {
++		compatible = "gpio-leds";
++
++		work-red {
++			gpios = <&gpio4 RK_PC1 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "none";
++			default-state = "off";
++			retain-state-suspended;
++			retain-state-shutdown;
++		};
++
++		work-green {
++			gpios = <&gpio4 RK_PB3 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "none";
++			default-state = "on";
++			retain-state-suspended;
++			retain-state-shutdown;
++		};
++
++		pwr-wifi {
++			gpios = <&gpio1 RK_PA6 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "none";
++			default-state = "on";
++		};
++	};
++#endif
++
+ 	hdmi_sound: hdmi-sound {
+ 		compatible = "rockchip,hdmi";
+ 		rockchip,mclk-fs = <128>;
+diff --git a/rk3528-pinctrl.dtsi b/rk3528-pinctrl.dtsi
+index 288b6ae..52e5fab 100644
+--- a/rk3528-pinctrl.dtsi
++++ b/rk3528-pinctrl.dtsi
+@@ -1025,6 +1025,10 @@
+ 		};
+ 	};
+ 
++#if SPI_PINS_NONE
++#define pcfg_pull_none_drv_level_2 pcfg_pull_none
++#endif
++
+ 	spi0 {
+ 		/omit-if-no-ref/
+ 		spi0_pins: spi0-pins {
+@@ -1077,6 +1081,10 @@
+ 		};
+ 	};
+ 
++#if SPI_PINS_NONE
++#undef pcfg_pull_none_drv_level_2
++#endif
++
+ 	tsi0 {
+ 		/omit-if-no-ref/
+ 		tsi0_pins: tsi0-pins {
+diff --git a/rk3528.dtsi b/rk3528.dtsi
+index 029e725..616da33 100644
+--- a/rk3528.dtsi
++++ b/rk3528.dtsi
+@@ -366,12 +366,15 @@
+ 
+ 	dmc: dmc {
+ 		compatible = "rockchip,rk3528-dmc";
++#if !NO_DMC_EXTRA
+ 		interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+ 		interrupt-names = "complete";
++#endif
+ 		devfreq-events = <&dfi>;
+ 		clocks = <&scmi_clk SCMI_CLK_DDR>;
+ 		clock-names = "dmc_clk";
+ 		operating-points-v2 = <&dmc_opp_table>;
++#if !NO_DMC_EXTRA
+ 		upthreshold = <40>;
+ 		downdifferential = <20>;
+ 		system-status-level = <
+@@ -380,6 +383,7 @@
+ 		>;
+ 		auto-min-freq = <324000>;
+ 		auto-freq-en = <0>;
++#endif
+ 		status = "disabled";
+ 	};
+ 
+@@ -644,15 +648,21 @@
+ 			resets = <&cru SRST_ARESETN_USB3OTG>;
+ 			reset-names = "usb3-otg";
+ 			snps,dis_enblslpm_quirk;
++#if !OLD_USB_QUIRK
+ 			snps,dis-u1-entry-quirk;
+ 			snps,dis-u2-entry-quirk;
++#else
++			snps,dis-u1u2-quirk;
++#endif
+ 			snps,dis-u2-freeclk-exists-quirk;
+ 			snps,dis-del-phy-power-chg-quirk;
+ 			snps,dis-tx-ipgap-linecheck-quirk;
+ 			snps,xhci-trb-ent-quirk;
+ 			snps,dis_rxdet_inp3_quirk;
++#if !OLD_USB_QUIRK
+ 			snps,parkmode-disable-hs-quirk;
+ 			snps,parkmode-disable-ss-quirk;
++#endif
+ 			quirk-skip-phy-init;
+ 			status = "disabled";
+ 		};
+@@ -1531,8 +1541,14 @@
+ 		ddc-i2c-scl-low-time-ns = <10000>;
+ 		reg-io-width = <4>;
+ 		rockchip,grf = <&grf>;
++#if !HDMI_IDLE
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&hdmi_pins>;
++#else
++		pinctrl-names = "default", "idle";
++		pinctrl-0 = <&hdmi_pins>;
++		pinctrl-1 = <&hdmi_pins_idle>;
++#endif
+ 		phys = <&hdmiphy>;
+ 		phy-names = "hdmi";
+ 		#sound-dai-cells = <0>;
+@@ -2165,6 +2181,9 @@
+ 			 <&cru SRST_TRESETN_EMMC>;
+ 		reset-names = "core", "bus", "axi", "block", "timer";
+ 		max-frequency = <200000000>;
++#if VONTAR_DQ08
++		fifo-depth = <0x100>;
++#endif
+ 		status = "disabled";
+ 	};
+ 

@@ -1,0 +1,192 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/ {
+#if NO_DFI
+	/delete-node/ dfi@ff930000;
+	dmc {
+		/delete-property/ devfreq-events;
+	};
+#endif
+#if NO_SECURE_OTP
+	/delete-node/ secure-otp;
+#endif
+#if NO_BT_SOUND
+	/delete-node/ bt-sco;
+	/delete-node/ bt-sound;
+#endif
+};
+
+#if LOW_CPU_OPP
+&cpu0_opp_table {
+#define LOW_CPU_OPP_FREQ(freq) \
+	opp-##freq##000000 { \
+		opp-microvolt-L0 = <862500 862500 1100000>; \
+		opp-microvolt-L1 = <862500 862500 1100000>; \
+		opp-microvolt-L2 = <862500 862500 1100000>; \
+		opp-microvolt-L3 = <862500 862500 1100000>; \
+		opp-microvolt-L4 = <862500 862500 1100000>; \
+		opp-microvolt-L5 = <837500 837500 1100000>; \
+	};
+	LOW_CPU_OPP_FREQ(408)
+	LOW_CPU_OPP_FREQ(600)
+	LOW_CPU_OPP_FREQ(816)
+	LOW_CPU_OPP_FREQ(1008)
+#undef LOW_CPU_OPP_FREQ
+	opp-1200000000 {
+		opp-microvolt-L4 = <862500 862500 1100000>;
+		opp-microvolt-L5 = <850000 850000 1100000>;
+		opp-microvolt-L6 = <837500 837500 1100000>;
+	};
+};
+#endif
+
+#if NO_MBIST_VMIN
+&cpu0_opp_table {
+	/delete-property/ mbist-vmin;
+	nvmem-cells = <&cpu_leakage>, <&cpu_opp_info>;
+	nvmem-cell-names = "leakage", "opp-info";
+};
+&dmc_opp_table {
+	/delete-property/ mbist-vmin;
+	nvmem-cells = <&log_leakage>, <&dmc_opp_info>;
+	nvmem-cell-names = "leakage", "opp-info";
+};
+&gpu_opp_table {
+	/delete-property/ mbist-vmin;
+	nvmem-cells = <&gpu_leakage>, <&gpu_opp_info>;
+	nvmem-cell-names = "leakage", "opp-info";
+};
+&otp {
+	/delete-node/ cpu-mbist-vmin@9;
+	/delete-node/ gpu-mbist-vmin@9;
+	/delete-node/ logic-mbist-vmin@9;
+};
+#endif
+
+#if LIMA_COMPAT
+&gpu {
+#define MALI450_INTERRUPTS \
+	<GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>, \
+	<GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>, \
+	<GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>, \
+	<GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>, \
+	<GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>, \
+	<GIC_SPI 90 IRQ_TYPE_LEVEL_HIGH>, \
+	<GIC_SPI 91 IRQ_TYPE_LEVEL_HIGH>
+
+	interrupts = MALI450_INTERRUPTS, MALI450_INTERRUPTS;
+	interrupt-names = "Mali_GP_IRQ", "Mali_GP_MMU_IRQ", "IRQPP",
+			"Mali_PP0_IRQ", "Mali_PP0_MMU_IRQ", "Mali_PP1_IRQ", "Mali_PP1_MMU_IRQ",
+			"gp", "gpmmu", "pp", "pp0", "ppmmu0", "pp1", "ppmmu1";
+	clocks = <&scmi_clk SCMI_CLK_GPU>, <&cru ACLK_GPU_MALI>,
+		 <&cru PCLK_GPU_ROOT>, <&scmi_clk SCMI_CLK_GPU>, <&cru ACLK_GPU_MALI>;
+	clock-names = "clk_mali", "aclk_gpu_mali", "pclk_gpu", "bus", "core";
+};
+#endif
+
+#if NO_ETH_LED
+&rmii0_phy {
+	/delete-property/ pinctrl-0;
+};
+#endif
+
+#if NO_TSADC_TRIM
+&tsadc {
+	/delete-property/ nvmem-cells;
+	/delete-property/ nvmem-cell-names;
+};
+&otp {
+	/delete-node/ cpu-tsadc-trim-l@44;
+	/delete-node/ cpu-tsadc-trim-h@45;
+};
+#endif
+
+#if I2S_PINS_MERGE
+&pinctrl {
+	i2s0 {
+		/delete-node/ i2s0m0-lrck;
+		/delete-node/ i2s0m0-mclk;
+		/delete-node/ i2s0m0-sclk;
+		/delete-node/ i2s0m0-sdi;
+		/delete-node/ i2s0m0-sdo;
+		/delete-node/ i2s0m1-lrck;
+		/delete-node/ i2s0m1-mclk;
+		/delete-node/ i2s0m1-sclk;
+		/delete-node/ i2s0m1-sdi;
+		/delete-node/ i2s0m1-sdo;
+
+		/omit-if-no-ref/
+		i2s0m0_pins: i2s0m0-pins {
+			rockchip,pins =
+				<3 RK_PB6 1 &pcfg_pull_none>,
+				<3 RK_PB4 1 &pcfg_pull_none>,
+				<3 RK_PB5 1 &pcfg_pull_none>,
+				<3 RK_PB7 1 &pcfg_pull_none>,
+				<3 RK_PC0 1 &pcfg_pull_none>;
+		};
+
+		/omit-if-no-ref/
+		i2s0m1_pins: i2s0m1-pins {
+			rockchip,pins =
+				<1 RK_PB6 1 &pcfg_pull_none>,
+				<1 RK_PB4 1 &pcfg_pull_none>,
+				<1 RK_PB5 1 &pcfg_pull_none>,
+				<1 RK_PB7 1 &pcfg_pull_none>,
+				<1 RK_PC0 1 &pcfg_pull_none>;
+		};
+	};
+
+	i2s1 {
+		/delete-node/ i2s1-lrck;
+		/delete-node/ i2s1-mclk;
+		/delete-node/ i2s1-sclk;
+		/delete-node/ i2s1-sdi0;
+		/delete-node/ i2s1-sdi1;
+		/delete-node/ i2s1-sdi2;
+		/delete-node/ i2s1-sdi3;
+		/delete-node/ i2s1-sdo0;
+		/delete-node/ i2s1-sdo1;
+		/delete-node/ i2s1-sdo2;
+		/delete-node/ i2s1-sdo3;
+
+		/omit-if-no-ref/
+		i2s1_pins: i2s1-pins  {
+			rockchip,pins =
+				<4 RK_PA6 1 &pcfg_pull_none>,
+				<4 RK_PA4 1 &pcfg_pull_none>,
+				<4 RK_PA5 1 &pcfg_pull_none>,
+				<4 RK_PB4 1 &pcfg_pull_none>,
+				<4 RK_PB3 1 &pcfg_pull_none>,
+				<4 RK_PA3 1 &pcfg_pull_none>,
+				<4 RK_PA2 1 &pcfg_pull_none>,
+				<4 RK_PA7 1 &pcfg_pull_none>,
+				<4 RK_PB0 1 &pcfg_pull_none>,
+				<4 RK_PB1 1 &pcfg_pull_none>,
+				<4 RK_PB2 1 &pcfg_pull_none>;
+		};
+	};
+};
+
+&sai0 {
+	pinctrl-0 = <&i2s0m0_pins>;
+};
+
+&sai1 {
+	pinctrl-0 = <&i2s1_pins>;
+};
+#endif
+
+&sdmmc {
+	status = "okay";
+};
+
+&usbdrd_dwc3 {
+	dr_mode = "host";
+};
+
+#if TVBOX_FIXES
+&hdmi_sound {
+	status = "okay";
+};
+#endif
+

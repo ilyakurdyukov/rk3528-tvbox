@@ -1,0 +1,122 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#define H96MAX_M1 1
+#define NO_ETH_LED 1
+#ifndef SPI_PINS_NONE
+#define SPI_PINS_NONE 1
+#endif
+#ifndef I2S_PINS_MERGE
+#define I2S_PINS_MERGE 1
+#endif
+#ifndef HDMI_IDLE
+#define HDMI_IDLE 1
+#endif
+#ifndef FD655_DEV
+#define FD655_DEV 1
+#endif
+
+#include "rk3528-evb1-ddr4-v10.dtsi"
+#include "rk3528-android.dtsi"
+
+#include "rk3528-hacks.dtsi"
+
+&route_hdmi {
+	/delete-property/ logo,kernel;
+	logo,mode = "fullscreen";
+};
+
+&route_tve {
+	/delete-property/ logo,kernel;
+	logo,mode = "fullscreen";
+};
+
+&vcc5v0_otg_en {
+	rockchip,pins = <4 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>;
+};
+
+&vcc5v0_otg {
+	gpio = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
+};
+
+&sdio_pwrseq {
+	reset-gpios = <&gpio4 RK_PA4 GPIO_ACTIVE_LOW>;
+};
+
+&wifi_enable_h {
+	rockchip,pins = <4 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
+};
+
+&pwm7 {
+	clocks = <&cru CLK_PWM0>, <&cru PCLK_PWM0>;
+};
+
+&pwm3 {
+	ir_key4 {
+		rockchip,usercode = <0x7f80>;
+		rockchip,key_table =
+			<0xec KEY_REPLY>,
+			<0xd8 KEY_BACK>,
+			<0xc7 KEY_UP>,
+			<0xbf KEY_DOWN>,
+			<0xc8 KEY_LEFT>,
+			<0xc6 KEY_RIGHT>,
+			<0x8c KEY_HOME>,
+			<0x78 KEY_VOLUMEUP>,
+			<0x76 KEY_VOLUMEDOWN>,
+			<0x7e KEY_POWER>,
+			<0x7c KEY_MENU>,
+			<0xb7 KEY_TEXT>;
+		};
+
+	ir_key5 {
+		rockchip,usercode = <0xfe01>;
+		rockchip,key_table =
+			<0xec KEY_REPLY>,
+			<0xe6 KEY_BACK>,
+			<0xe9 KEY_UP>,
+			<0xe5 KEY_DOWN>,
+			<0xae KEY_LEFT>,
+			<0xaf KEY_RIGHT>,
+			<0xee KEY_HOME>,
+			<0xe7 KEY_VOLUMEUP>,
+			<0xef KEY_VOLUMEDOWN>,
+			<0xbf KEY_POWER>,
+			<0xbe KEY_MUTE>,
+			<0xb3 KEY_MENU>,
+			<0xff KEY_TEXT>,
+			<0xb1 KEY_1>,
+			<0xf2 KEY_2>,
+			<0xf3 KEY_3>,
+			<0xb5 KEY_4>,
+			<0xf6 KEY_5>,
+			<0xf7 KEY_6>,
+			<0xb9 KEY_7>,
+			<0xfa KEY_8>,
+			<0xfb KEY_9>,
+			<0xfe KEY_0>,
+			<0xbd KEY_BACKSPACE>,
+			<0xbc KEY_F13>,
+			<0xf0 KEY_F16>,
+			<0xb4 KEY_PREVIOUS>,
+			<0xb8 KEY_A>,
+			<0xb0 KEY_NEXT>;
+	};
+
+	ir_key6 {
+		rockchip,usercode = <0xfd01>;
+		rockchip,key_table =
+			<0x31 KEY_REPLY>,
+			<0x2f KEY_BACK>,
+			<0x35 KEY_UP>,
+			<0x2d KEY_DOWN>,
+			<0x66 KEY_LEFT>,
+			<0x3e KEY_RIGHT>,
+			<0x6a KEY_HOME>,
+			<0x5e KEY_VOLUMEUP>,
+			<0x47 KEY_VOLUMEDOWN>,
+			<0x23 KEY_POWER>,
+			<0x3a KEY_TEXT>,
+			<0x0d KEY_F6>;
+	};
+};
+

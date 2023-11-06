@@ -1,0 +1,229 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#define VONTAR_DQ08 1
+#define NO_ETH_LED 1
+#ifndef SPI_PINS_NONE
+#define SPI_PINS_NONE 1
+#endif
+#ifndef I2S_PINS_MERGE
+#define I2S_PINS_MERGE 1
+#endif
+#ifndef HDMI_IDLE
+#define HDMI_IDLE 1
+#endif
+
+#include "rk3528-demo1-lp4-v10.dtsi"
+#include "rk3528-android.dtsi"
+
+#include "rk3528-hacks.dtsi"
+
+&route_hdmi {
+	logo,mode = "fullscreen";
+	charge_logo,mode = "fullscreen";
+};
+
+&route_tve {
+	logo,mode = "fullscreen";
+	charge_logo,mode = "fullscreen";
+};
+
+&uart3 {
+	status = "okay";
+	pinctrl-names = "default";
+	dma-names = "!tx", "!rx";
+	pinctrl-0 = <&uart3m1_xfer>;
+};
+
+&pinctrl {
+	sdio-pwrseq {
+		/delete-node/ wifi-enable-h;
+	};
+	wireless-wlan {
+		/delete-node/ wifi-reset;
+	};
+
+	sdio-pwrseq {
+		wifi_reset: wifi-reset {
+			rockchip,pins = <3 RK_PB4 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+	};
+	wireless-wlan {
+		wifi_enable_h: wifi-enable-h {
+			rockchip,pins = <3 RK_PB2 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+	};
+};
+
+/ {
+
+	sdio_pwrseq: sdio-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_reset &clkm0_32k_out>;
+		reset-gpios = <&gpio3 RK_PB4 GPIO_ACTIVE_LOW>;
+	};
+
+	wireless_bluetooth: wireless-bluetooth {
+		compatible = "bluetooth-platdata";
+		uart_rts_gpios = <&gpio3 RK_PA2 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default\0rts_gpio";
+		pinctrl-0 = <&uart2m0_rtsn>;
+		pinctrl-1 = <&uart2m0_gpios>;
+		BT,reset_gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
+		BT,wake_host_irq = <&gpio3 RK_PC1 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	wireless_wlan: wireless-wlan {
+		compatible = "wlan-platdata";
+		rockchip,grf = <&grf>;
+		wifi_chip_type = "rtl8822cs";
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_host_wake_irq &wifi_enable_h>;
+		WIFI,host_wake_irq = <&gpio3 RK_PB3 GPIO_ACTIVE_HIGH>;
+		WIFI,poweren_gpio = <&gpio3 RK_PB2 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	fd628_dev: fd628-dev {
+		compatible = "amlogic, fd628_dev";
+		fd628_gpio_clk = <&gpio4 RK_PA3 GPIO_ACTIVE_HIGH>;
+		fd628_gpio_dat = <&gpio4 RK_PA2 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	amlogic_battery: dummy-battery {
+		compatible = "amlogic, dummy-battery";
+		status = "okay";
+	};
+
+	amlogic_charger: dummy-charger {
+		compatible = "amlogic, dummy-charger";
+		status = "okay";
+	};
+
+};
+
+&sdmmc {
+	bus-width = <4>;
+	cap-mmc-highspeed;
+	cap-sd-highspeed;
+	disable-wp;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_det &sdmmc_bus4>;
+	supports-sd;
+	num-slots = <1>;
+	card-detect-delay = <500>;
+	vmmc-supply = <&vcc_sd>;
+};
+
+&spdif_8ch {
+	status = "disabled";
+};
+
+&combphy_pu {
+	status = "okay";
+};
+
+&leds {
+	/delete-node/ ir;
+	/delete-node/ net-red;
+	/delete-node/ net-green;
+	pwr-green {
+		gpios = <&gpio4 RK_PB5 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+/ {
+	spdif-sound {
+		status = "disabled";
+	};
+	spdif-out {
+		status = "disabled";
+	};
+};
+
+&pwm3 {
+	ir_key2 {
+		rockchip,usercode = <0x7f80>;
+		rockchip,key_table =
+			<0xec KEY_REPLY>,
+			<0xd8 KEY_BACK>,
+			<0xc7 KEY_UP>,
+			<0xbf KEY_DOWN>,
+			<0xc8 KEY_LEFT>,
+			<0xc6 KEY_RIGHT>,
+			<0x8c KEY_HOME>,
+			<0x78 KEY_VOLUMEUP>,
+			<0x76 KEY_VOLUMEDOWN>,
+			<0x7e KEY_POWER>,
+			<0x7c KEY_MENU>,
+			<0xb7 KEY_TEXT>;
+	};
+
+	ir_key6 {
+		rockchip,usercode = <0xfe01>;
+		rockchip,key_table =
+			<0xec KEY_REPLY>,
+			<0xe6 KEY_BACK>,
+			<0xe9 KEY_UP>,
+			<0xe5 KEY_DOWN>,
+			<0xae KEY_LEFT>,
+			<0xaf KEY_RIGHT>,
+			<0xee KEY_HOME>,
+			<0xe7 KEY_VOLUMEUP>,
+			<0xef KEY_VOLUMEDOWN>,
+			<0xbf KEY_POWER>,
+			<0xbe KEY_MUTE>,
+			<0xb3 KEY_MENU>,
+			<0xff KEY_TEXT>,
+			<0xb1 KEY_1>,
+			<0xf2 KEY_2>,
+			<0xf3 KEY_3>,
+			<0xb5 KEY_4>,
+			<0xf6 KEY_5>,
+			<0xf7 KEY_6>,
+			<0xb9 KEY_7>,
+			<0xfa KEY_8>,
+			<0xfb KEY_9>,
+			<0xfe KEY_0>,
+			<0xbd KEY_BACKSPACE>,
+			<0xbc KEY_SETUP>,
+			<0xf0 KEY_F13>,
+			<0xb4 KEY_PREVIOUS>,
+			<0xb0 KEY_NEXT>,
+			<0x6d KEY_KATAKANA>,
+			<0x6c KEY_HIRAGANA>,
+			<0x33 KEY_HENKAN>,
+			<0x71 KEY_KATAKANAHIRAGANA>,
+			<0x70 KEY_MUHENKAN>,
+			<0x37 KEY_KPJPCOMMA>;
+	};
+
+	ir_key9 {
+		rockchip,usercode = <0x7788>;
+		rockchip,key_table =
+			<0xe6 KEY_REPLY>,
+			<0xb7 KEY_BACK>,
+			<0xea KEY_UP>,
+			<0xe9 KEY_DOWN>,
+			<0xe8 KEY_LEFT>,
+			<0xe7 KEY_RIGHT>,
+			<0xb8 KEY_HOME>,
+			<0xdc KEY_VOLUMEUP>,
+			<0xdb KEY_VOLUMEDOWN>,
+			<0xde KEY_POWER>,
+			<0xda KEY_MUTE>,
+			<0x9f KEY_MENU>,
+			<0xcd KEY_TEXT>,
+			<0xf0 KEY_SETUP>,
+			<0x8b KEY_F13>,
+			<0xcc KEY_PREVIOUS>,
+			<0xcb KEY_NEXT>,
+			<0x9b KEY_F6>,
+			<0x9c KEY_F8>,
+			<0x98 KEY_F4>,
+			<0x97 KEY_F5>;
+	};
+};
+
